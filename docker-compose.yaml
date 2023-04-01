@@ -14,7 +14,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: zabbix 
-      POSTGRES_PASSWORD: loboalpha
+      POSTGRES_PASSWORD: zabbix_pwd
       POSTGRES_DB: zabbix
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -39,7 +39,7 @@ services:
     environment:
       DB_SERVER_HOST: postgres-server 
       POSTGRES_USER: zabbix 
-      POSTGRES_PASSWORD: loboalpha 
+      POSTGRES_PASSWORD: zabbix_pwd 
       POSTGRES_DB: zabbix 
       ZBX_ENABLE_SNMP_TRAPS: true 
     ports:
@@ -59,7 +59,7 @@ services:
       ZBX_SERVER_HOST: zabbix-server-pgsql
       DB_SERVER_HOST: postgres-server 
       POSTGRES_USER: zabbix 
-      POSTGRES_PASSWORD: loboalpha 
+      POSTGRES_PASSWORD: zabbix_pwd 
       POSTGRES_DB: zabbix
     ports:
       - 80:8080  
