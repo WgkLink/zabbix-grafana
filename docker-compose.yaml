@@ -1,0 +1,96 @@
+version: '3'
+
+networks:
+  zabbix:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          ip_range: 172.20.240.0/20
+
+services:
+  postgres-server:
+    image: postgres:latest
+    container_name: zabbix-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: zabbix 
+      POSTGRES_PASSWORD: loboalpha
+      POSTGRES_DB: zabbix
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - zabbix
+
+  zabbix-snmptraps:
+    image: zabbix/zabbix-snmptraps:alpine-6.4-latest
+    container_name: zabbix-snmptraps
+    restart: unless-stopped
+    ports:
+      - 162:1162/udp
+    volumes:
+      - snmptraps:/var/lib/zabbix/snmptraps:rw 
+      - mibs:/usr/share/snmp/mibs:rw
+    networks:
+      - zabbix
+
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:alpine-6.4-latest
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: postgres-server 
+      POSTGRES_USER: zabbix 
+      POSTGRES_PASSWORD: loboalpha 
+      POSTGRES_DB: zabbix 
+      ZBX_ENABLE_SNMP_TRAPS: true 
+    ports:
+      - 10051:10051
+    volumes:
+      - snmptraps:/var/lib/zabbix/snmptraps:rw 
+      - mibs:/usr/share/snmp/mibs:rw
+    networks:
+      - zabbix
+    depends_on:
+      - postgres-server
+  
+  zabbix-web-nginx-pgsql:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-6.4-latest
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server-pgsql
+      DB_SERVER_HOST: postgres-server 
+      POSTGRES_USER: zabbix 
+      POSTGRES_PASSWORD: loboalpha 
+      POSTGRES_DB: zabbix
+    ports:
+      - 80:8080  
+      - 443:8443
+    networks:
+      - zabbix
+    depends_on:
+      - postgres-server
+      - zabbix-server
+    
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    container_name: grafana
+    ports:
+      - 3000:3000
+    networks:
+      - zabbix
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:latest
+    ports:
+      - 10050:10050
+    networks:
+        - zabbix
+    privileged: true
+  
+volumes:
+  snmptraps:
+  mibs:
+  pgdata:
+  grafana-storage:
