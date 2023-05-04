@@ -56,7 +56,7 @@ services:
     image: zabbix/zabbix-web-nginx-pgsql:alpine-6.4-latest
     restart: unless-stopped
     environment:
-      ZBX_SERVER_HOST: zabbix-server-pgsql
+      ZBX_SERVER_HOST: zabbix-server
       DB_SERVER_HOST: postgres-server 
       POSTGRES_USER: zabbix 
       POSTGRES_PASSWORD: zabbix_pwd 
